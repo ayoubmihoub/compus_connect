@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "664905364299",
+    "project_id": "compus-9db8d",
+    "storage_bucket": "compus-9db8d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:664905364299:android:ccea40f98d586c44a62ece",
+        "android_client_info": {
+          "package_name": "com.example.compus_connect"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBdByQCk81slWcnkuuozJuwGaJIVLCr7hc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
