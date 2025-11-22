@@ -1,20 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../service/auth_service.dart'; // Importez le service mis à jour
 
-ValueNotifier<AuthService> authService = ValueNotifier(AuthService());
-
-class AuthService {
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-  User? get currentUser => firebaseAuth.currentUser;
-
-  Future<UserCredential> signIn({
-    required String email,
-    required String password,
-  }) async {
-    return await firebaseAuth.signInWithEmailAndPassword(
-        email: email, password: password);
-  }
-}
+// La définition interne de AuthService est retirée.
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -48,10 +36,27 @@ class _LoginPageState extends State<LoginPage> {
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
         );
+
+        // Récupération du rôle pour la redirection
+        String role = await authService.value.getUserRole();
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('Connexion réussie !')),
           );
+
+          // Redirection conditionnelle basée sur le rôle
+          if (role == 'admin') {
+            Navigator.pushReplacementNamed(context, '/admin_home');
+          } else if (role == 'user') {
+            Navigator.pushReplacementNamed(context, '/user_home');
+          } else {
+            // Rôle non reconnu: déconnexion de sécurité
+            await authService.value.signOut();
+            setState(() {
+              _errorMessage = 'Rôle utilisateur non valide. Veuillez contacter l\'assistance.';
+            });
+          }
         }
       } on FirebaseAuthException catch (e) {
         String message;

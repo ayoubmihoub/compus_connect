@@ -1,24 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import '../service/auth_service.dart'; // Utilisation du service centralisé
 
-ValueNotifier<AuthService> authService = ValueNotifier(AuthService());
-
-class AuthService {
-  final FirebaseAuth firebaseAuth = FirebaseAuth.instance;
-  User? get currentUser => firebaseAuth.currentUser;
-  Stream<User?> get authStateChanges => firebaseAuth.authStateChanges();
-  Future<UserCredential> createAccount({
-    required String email,
-    required String password,
-  }) async {
-    return await firebaseAuth.createUserWithEmailAndPassword(
-        email: email, password: password);
-  }
-
-  Future<void> updateUsername({required String username}) async {
-    await currentUser!.updateDisplayName(username);
-  }
-}
+// La définition interne de AuthService est supprimée.
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -50,14 +34,13 @@ class _SignUpPageState extends State<SignUpPage> {
         _errorMessage = null;
       });
       try {
-        UserCredential userCredential = await authService.value.createAccount(
+        // L'appel utilise le service mis à jour (la logique d'ajout de rôle est dans AuthService)
+        await authService.value.createAccount(
           email: _emailController.text.trim(),
           password: _passwordController.text.trim(),
+          username: _usernameController.text.trim(),
         );
-        if (userCredential.user != null) {
-          await authService.value
-              .updateUsername(username: _usernameController.text.trim());
-        }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(SnackBar(
               content: Text(
