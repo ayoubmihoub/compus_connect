@@ -1,9 +1,15 @@
+// admi_home.dart
+
 import 'package:flutter/material.dart';
 import '../service/auth_service.dart';
-import '../service/firestore_service.dart'; // NOUVEL IMPORT
-import 'users.dart'; // Import des pages
-import 'posts.dart'; // Import des pages
+import '../service/firestore_service.dart';
+import 'users.dart'; // Import des pages (Gestion des Utilisateurs)
+import 'posts.dart'; // Import des pages (Gestion des Posts)
+import 'package:cloud_firestore/cloud_firestore.dart';
 
+// ==========================================================
+// 1. CLASSE PRINCIPALE (AdminHomePage)
+// ==========================================================
 class AdminHomePage extends StatefulWidget {
   const AdminHomePage({super.key});
 
@@ -14,26 +20,24 @@ class AdminHomePage extends StatefulWidget {
 class _AdminHomePageState extends State<AdminHomePage> {
   int _selectedIndex = 0;
 
-  // Liste des widgets/pages pour la zone de contenu principale
+  // 🔑 تم إزالة const لحل مشكلة 'Not a constant expression'
   late final List<Widget> _widgetOptions = <Widget>[
     DashboardContent(), // Index 0: Tableau de bord
     const UsersPage(),  // Index 1: Page Utilisateurs
     const PostsPage(),  // Index 2: Page Posts
   ];
 
-  // Noms pour la barre d'application
-  final List<String> _titles = ['Dashboard', 'Gestion des Utilisateurs', 'Gestion des Posts'];
+  final List<String> _titles = ['Dashboard', 'Gestion des Utilisateurs', 'Gestion des Posts']; // [cite: 107]
 
   // Fonction pour gérer la déconnexion
   Future<void> _logout() async {
-    await authService.value.signOut();
+    await authService.value.signOut(); // [cite: 109]
     if (mounted) {
-      // Naviguer vers la page de bienvenue et supprimer toutes les routes
-      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false); // [cite: 110]
     }
   }
 
-  // Builder pour la barre latérale de navigation
+  // Builder pour la barre الجانبية (Drawer)
   Widget _buildDrawer() {
     return Drawer(
       child: ListView(
@@ -51,7 +55,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
                 fontWeight: FontWeight.bold,
               ),
             ),
-          ),
+          ), // [cite: 111-112]
           // Bouton Dashboard (Accueil)
           ListTile(
             leading: const Icon(Icons.dashboard),
@@ -61,7 +65,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
               setState(() {
                 _selectedIndex = 0;
               });
-              Navigator.pop(context);
+              Navigator.pop(context); // [cite: 113]
             },
           ),
           // Bouton Users
@@ -71,7 +75,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             selected: _selectedIndex == 1,
             onTap: () {
               setState(() {
-                _selectedIndex = 1;
+                _selectedIndex = 1; // [cite: 115]
               });
               Navigator.pop(context);
             },
@@ -83,7 +87,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
             selected: _selectedIndex == 2,
             onTap: () {
               setState(() {
-                _selectedIndex = 2;
+                _selectedIndex = 2; // [cite: 116]
               });
               Navigator.pop(context);
             },
@@ -93,7 +97,7 @@ class _AdminHomePageState extends State<AdminHomePage> {
           ListTile(
             leading: const Icon(Icons.logout, color: Colors.red),
             title: const Text('Logout'),
-            onTap: _logout,
+            onTap: _logout, // [cite: 117]
           ),
         ],
       ),
@@ -106,26 +110,28 @@ class _AdminHomePageState extends State<AdminHomePage> {
       appBar: AppBar(
         title: Text(_titles[_selectedIndex]),
         backgroundColor: Colors.red,
-        // Le bouton du Drawer est géré automatiquement par Scaffold si le Drawer est présent
       ),
       drawer: _buildDrawer(),
-      body: _widgetOptions.elementAt(_selectedIndex),
+      body: _widgetOptions.elementAt(_selectedIndex), // [cite: 119]
     );
   }
 }
 
-// Widget séparé pour le contenu du Tableau de Bord (Dashboard)
+// ==========================================================
+// 2. CONTENU DU TABLEAU DE BORD (DashboardContent)
+// ==========================================================
+
 class DashboardContent extends StatelessWidget {
   DashboardContent({super.key});
 
-  final Future<int> _userCount = firestoreService.getCollectionCount('users');
-  // NOTE: 'posts' est une collection hypothétique que vous devrez créer dans Firestore
-  final Future<int> _postCount = firestoreService.getCollectionCount('posts');
+  // جلب عدد المستخدمين والمنشورات
+  final Future<int> _userCount = firestoreService.getCollectionCount('users'); // [cite: 120]
+  final Future<int> _postCount = firestoreService.getCollectionCount('posts'); // [cite: 121]
 
   @override
   Widget build(BuildContext context) {
     return SingleChildScrollView(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20.0), // [cite: 122]
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
@@ -140,7 +146,7 @@ class DashboardContent extends StatelessWidget {
               Expanded(
                 child: FutureCountCard(
                   futureCount: _userCount,
-                  title: 'Total Utilisateurs',
+                  title: 'Total Utilisateurs', // [cite: 123]
                   icon: Icons.people_alt,
                   color: Colors.blueAccent,
                 ),
@@ -149,24 +155,24 @@ class DashboardContent extends StatelessWidget {
               Expanded(
                 child: FutureCountCard(
                   futureCount: _postCount,
-                  title: 'Total Posts',
+                  title: 'Total Posts', // [cite: 124]
                   icon: Icons.article_outlined,
-                  color: Colors.green,
+                  color: Colors.green, // [cite: 125]
                 ),
               ),
             ],
           ),
           const SizedBox(height: 40),
-          // Autres sections du tableau de bord ici
+          // Autres sections
           const Text(
             'Autres Analyses...',
             style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-          ),
+          ), // [cite: 126]
           const SizedBox(height: 10),
           Container(
             height: 200,
             color: Colors.grey[200],
-            child: const Center(child: Text('Zone de graphiques ou rapports')),
+            child: const Center(child: Text('Zone de graphiques ou rapports')), // [cite: 127]
           )
         ],
       ),
@@ -174,9 +180,12 @@ class DashboardContent extends StatelessWidget {
   }
 }
 
-// Widget réutilisable pour afficher les données asynchrones de Firestore
+// ==========================================================
+// 3. WIDGET FutureCountCard (لعرض الإحصائيات)
+// ==========================================================
+
 class FutureCountCard extends StatelessWidget {
-  final Future<int> futureCount;
+  final Future<int> futureCount; // [cite: 129]
   final String title;
   final IconData icon;
   final Color color;
@@ -193,29 +202,29 @@ class FutureCountCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Card(
       elevation: 5,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)), // [cite: 130]
       child: Padding(
         padding: const EdgeInsets.all(20.0),
         child: FutureBuilder<int>(
           future: futureCount,
           builder: (context, snapshot) {
             String value;
-            Color indicatorColor = color;
+            Color indicatorColor = color; // [cite: 131]
             Widget indicator = const SizedBox.shrink();
 
             if (snapshot.connectionState == ConnectionState.waiting) {
               value = '...';
               indicator = SizedBox(
                 width: 20,
-                height: 20,
+                height: 20, // [cite: 132]
                 child: CircularProgressIndicator(strokeWidth: 2, color: color),
               );
             } else if (snapshot.hasError) {
               value = 'Erreur';
               indicatorColor = Colors.red;
-              indicator = const Icon(Icons.error, size: 20, color: Colors.red);
+              indicator = const Icon(Icons.error, size: 20, color: Colors.red); // [cite: 133]
             } else {
-              value = snapshot.data.toString();
+              value = snapshot.data.toString(); // [cite: 134]
             }
 
             return Column(
@@ -224,28 +233,28 @@ class FutureCountCard extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Icon(icon, size: 40, color: color),
+                    Icon(icon, size: 40, color: color), // [cite: 135]
                     Text(
                       value,
                       style: TextStyle(
-                        fontSize: 36,
+                        fontSize: 36, // [cite: 136]
                         fontWeight: FontWeight.bold,
                         color: indicatorColor,
-                      ),
+                      ), // [cite: 137]
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
                   title,
-                  style: const TextStyle(fontSize: 16, color: Colors.grey),
+                  style: const TextStyle(fontSize: 16, color: Colors.grey), // [cite: 138]
                 ),
                 indicator,
               ],
             );
           },
         ),
-      ),
+      ), // [cite: 139]
     );
   }
 }

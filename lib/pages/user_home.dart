@@ -9,7 +9,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
 import 'package:intl/intl.dart';
-
 import '../service/auth_service.dart';
 import 'my_profile.dart';
 import 'comments_bottom_sheet.dart'; // 🔑 IMPORT DE LA PAGE DE COMMENTAIRES
@@ -68,7 +67,6 @@ Future<String> fetchUsername(String userId) async {
 // 🔑 LOGIQUE DE LIKE : Ajout / Suppression de l'UID de l'utilisateur dans le tableau 'likes'
 Future<void> toggleLike(String postId, String userId, BuildContext context) async {
   final DocumentReference postRef = FirebaseFirestore.instance.collection('posts').doc(postId);
-
   try {
     // Utilisation d'une transaction pour garantir l'atomicité
     await FirebaseFirestore.instance.runTransaction((transaction) async {
@@ -81,6 +79,7 @@ Future<void> toggleLike(String postId, String userId, BuildContext context) asyn
       List<String> likes = List<String>.from(data['likes'] ?? []);
 
       if (likes.contains(userId)) {
+
         // L'utilisateur a déjà liké, on retire le like (Unlike)
         likes.remove(userId);
       } else {
@@ -91,12 +90,6 @@ Future<void> toggleLike(String postId, String userId, BuildContext context) asyn
       // Mettre à jour la collection dans Firestore
       transaction.update(postRef, {'likes': likes});
     });
-
-    // Optionnel: Afficher un feedback rapide après la transaction
-    // ScaffoldMessenger.of(context).showSnackBar(
-    //   SnackBar(content: Text('J\'aime mis à jour.')),
-    // );
-
   } catch (e) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text('Erreur lors de la mise à jour du J\'aime: $e')),
@@ -147,6 +140,7 @@ class _UserHomePageState extends State<UserHomePage> {
             icon: const Icon(Icons.logout),
             onPressed: _logout,
 
+
             tooltip: 'Déconnexion',
           ),
         ],
@@ -158,6 +152,7 @@ class _UserHomePageState extends State<UserHomePage> {
           BottomNavigationBarItem(
             icon: Icon(Icons.home),
             label: 'Accueil',
+
 
           ),
           BottomNavigationBarItem(
@@ -194,6 +189,7 @@ class HomeFeedContent extends StatelessWidget {
           child: StreamBuilder<QuerySnapshot>(
             stream: FirebaseFirestore.instance.collection('posts')
 
+
                 .orderBy('createdAt', descending: true)
                 .snapshots(),
             builder: (context, snapshot) {
@@ -201,12 +197,14 @@ class HomeFeedContent extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
+
               if (snapshot.hasError) {
                 return Center(child: Text('Erreur: ${snapshot.error}'));
               }
               if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
                 return const Center(child: Text('Aucun post à afficher.'));
               }
+
 
 
               return ListView(
@@ -262,6 +260,7 @@ class _PostCreationZoneState extends State<PostCreationZone> {
             children: <Widget>[
               ListTile(
 
+
                 leading: const Icon(Icons.photo_library, color: Colors.blue),
                 title: const Text('Choisir une Photo (Image)'),
                 onTap: () {
@@ -269,11 +268,13 @@ class _PostCreationZoneState extends State<PostCreationZone> {
                   _pickMedia(ImageSource.gallery, 'image');
                 },
 
+
               ),
               ListTile(
                 leading: const Icon(Icons.block, color: Colors.red),
                 title: const Text('Vidéo (Bloqué - Limite 1MB)'),
                 onTap: () {
+
 
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
@@ -380,6 +381,7 @@ class _PostCreationZoneState extends State<PostCreationZone> {
             style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.blueGrey),
           ),
 
+
           TextButton(
             onPressed: () {
               setState(() {
@@ -387,6 +389,7 @@ class _PostCreationZoneState extends State<PostCreationZone> {
                 _mediaType = null;
               });
             },
+
 
             child: const Text('Retirer', style: TextStyle(color: Colors.red)),
           ),
@@ -407,11 +410,13 @@ class _PostCreationZoneState extends State<PostCreationZone> {
             TextFormField(
               controller: _descriptionController,
 
-              // 🔑 C'EST ICI QUE LA HAUTEUR EST DIMINUÉE À 2 LIGNES
+
+              // 🔑 C'EST ICI QUE LA HAUTEUR EST DIMINUÉE À 1 LIGNE
               maxLines: 1,
               decoration: const InputDecoration(
                 hintText: 'Quoi de neuf sur le campus ?',
                 border: OutlineInputBorder(
+
 
                     borderSide: BorderSide.none
                 ),
@@ -422,6 +427,7 @@ class _PostCreationZoneState extends State<PostCreationZone> {
             const SizedBox(height: 10),
 
 
+
             _buildSelectedMediaPreview(),
 
             Row(
@@ -429,6 +435,7 @@ class _PostCreationZoneState extends State<PostCreationZone> {
               children: <Widget>[
                 TextButton.icon(
                   onPressed: _showMediaSourceDialog,
+
 
                   icon: const Icon(Icons.add_a_photo, color: Colors.green),
                   label: const Text('Photo/Vidéo'),
@@ -438,11 +445,13 @@ class _PostCreationZoneState extends State<PostCreationZone> {
                   onPressed: _publishPost,
                   icon: const Icon(Icons.send),
 
+
                   label: const Text('Publier'),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.blueAccent,
                     foregroundColor: Colors.white,
                   ),
+
 
                 ),
               ],
@@ -479,6 +488,7 @@ class PostCard extends StatelessWidget {
           actions: <Widget>[
             TextButton(
 
+
               child: const Text('Annuler'),
               onPressed: () {
                 Navigator.of(context).pop();
@@ -486,6 +496,7 @@ class PostCard extends StatelessWidget {
             ),
             TextButton(
               child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+
 
               onPressed: () {
                 Navigator.of(context).pop();
@@ -520,12 +531,10 @@ class PostCard extends StatelessWidget {
     final Timestamp?
     createdAt = data['createdAt'] as Timestamp?;
     final bool canDelete = postUserId == currentUserId;
-
     // 🔑 RÉCUPÉRATION DES DONNÉES DE LIKE ET COMMENTAIRE
     final List<String> likes = List<String>.from(data['likes'] ?? []);
     final int commentCount = data['commentCount'] ?? 0;
     final bool isLiked = likes.contains(currentUserId);
-
     // Décodage de l'image Base64
     Uint8List? decodedBytes;
     if (mediaBase64.isNotEmpty && (data['mediaType'] ?? 'none') == 'image') {
@@ -546,6 +555,7 @@ class PostCard extends StatelessWidget {
           // --- HEADER: Nom d'utilisateur et Bouton Supprimer ---
           Padding(
 
+
             padding: const EdgeInsets.only(top: 8.0, left: 12.0, right: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -553,15 +563,18 @@ class PostCard extends StatelessWidget {
                 // Affichage asynchrone du nom d'utilisateur
                 FutureBuilder<String>(
 
+
                   future: fetchUsername(postUserId),
                   builder: (context, snapshot) {
                     String username = snapshot.data ?? 'Chargement...';
                     return Text(
 
+
                       '@$username',
                       style: const TextStyle(
                           fontWeight: FontWeight.bold,
                           color: Colors.blueAccent,
+
 
                           fontSize: 14
                       ),
@@ -574,11 +587,13 @@ class PostCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.delete, color: Colors.red),
 
+
                     onPressed: () => _confirmDelete(context),
                     tooltip: 'Supprimer cette publication',
                   )
                 else
                   const SizedBox.shrink(),
+
 
               ],
             ),
@@ -589,12 +604,14 @@ class PostCard extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(bottom: 8.0, top: 8.0),
 
+
               child: Image.memory(
                 decodedBytes,
                 height: 250,
                 width: double.infinity,
                 fit: BoxFit.cover,
                 errorBuilder: (context, error, stackTrace) =>
+
 
                     Container(height: 250, color: Colors.red[100], child: const Center(child: Text('Erreur d\'affichage Base64'))),
               ),
@@ -605,6 +622,7 @@ class PostCard extends StatelessWidget {
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             child: Text(
 
+
               description,
               style: const TextStyle(fontSize: 16),
             ),
@@ -614,32 +632,39 @@ class PostCard extends StatelessWidget {
 
           // 🔑 BOUTONS DE LIKE ET COMMENTAIRE
           Padding(
+
             padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 // 1. Like Button
                 Row(
+
                   children: [
                     IconButton(
                       icon: Icon(
-                        isLiked ? Icons.favorite : Icons.favorite_border,
-                        color: isLiked ? Colors.red : Colors.grey,
+                        isLiked ?
+                        Icons.favorite : Icons.favorite_border,
+                        color: isLiked ?
+                        Colors.red : Colors.grey,
                       ),
                       onPressed: () => toggleLike(documentId, currentUserId, context),
                     ),
                     Text(
+
                       '${likes.length} J\'aime', // Nombre de likes
                       style: const TextStyle(fontSize: 14, color: Colors.grey),
                     ),
                   ],
                 ),
 
+
                 // 2. Comment Button
                 TextButton.icon(
                   icon: const Icon(Icons.comment_outlined, size: 18),
                   label: Text('$commentCount Commentaires'),
                   onPressed: () => _showCommentsSheet(context, documentId),
+
                 ),
               ],
             ),
@@ -650,6 +675,7 @@ class PostCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.only(left: 12.0, right: 12.0, bottom: 12.0, top: 0),
 
+
             child: Row(
               mainAxisAlignment: MainAxisAlignment.end,
               children: [
@@ -657,11 +683,13 @@ class PostCard extends StatelessWidget {
                   formatPostDate(createdAt), // Affichage de la date
                   style: const TextStyle(
 
+
                       color: Colors.grey,
                       fontSize: 12
                   ),
                 ),
               ],
+
 
             ),
           ),
